@@ -2,28 +2,28 @@ provider "aws" {
   region = "eu-west-3"
 }
 
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"]
-}
-
 resource "aws_instance" "web" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
+  ami           = "ami-0d3f551818b21ed81"
+  instance_type = local.web_instance_type_map[terraform.workspace]
+  count = local.web_instance_count_map[terraform.workspace]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   tags = {
-    Name = "HelloWorld"
+    Name = "AntonInstance"
+  }
+}
+
+locals {
+  web_instance_type_map = {
+  stage = "t2.micro"
+  prod = "t2.micro"
+  }
+  web_instance_count_map = {
+    stage = 1
+    prod = 2
   }
 }
 
